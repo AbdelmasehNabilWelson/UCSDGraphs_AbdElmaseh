@@ -7,7 +7,11 @@ Explore UCSDGraphs_AbdElmaseh, a project for graph algorithms. Uncover the power
 
 ## What I have Implemented in this project
 
-#### Class name: MapGraph
+### Class name: [Graph.java](/UCSDGraphs/src/basicgraph/Graph.java)
+- I implemented the degreeSequence method
+- I Implement the getDistance2 method in both [GraphAdjList](/UCSDGraphs/src/basicgraph/GraphAdjList.java) and [GraphAdjMatrix](/UCSDGraphs/src/basicgraph/GraphAdjMatrix.java) implementations
+
+#### Class name: [MapGraph](/UCSDGraphs/src/roadgraph/MapGraph.java)
 * Purpose and description of class:
 A class which reprsents a graph of geographic locations Nodes in the graph are intersections between 
 
@@ -26,12 +30,12 @@ A class which reprsents a graph of geographic locations Nodes in the graph are i
         * addVertex(GeographicPoint location)
         * addEdge method
 
-### Class name: MapEdges
+### Class name: [MapEdges](/UCSDGraphs/src/roadgraph/MapEdges.java)
 Purpose and description of class: A class which the nodes connected to a specific node as an edge between every two connected nodes. 
 
 * see the source code of the graph and you will fidnd the comments of each function implemnetaion
 
-### Class name: MapNode
+### Class name: [MapNode](/UCSDGraphs/src/roadgraph/MapNode.java)
 Purpose and description of class: A class which reprsents a node of a graph 
 
 ## Note
