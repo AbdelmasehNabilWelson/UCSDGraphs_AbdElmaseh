@@ -15,7 +15,7 @@ public class MapEdges {
 	
 	private String streetName; // the name of the edge(street)
 	private double length; // length of the road between the two nodes or the length of the edge
-	
+	 
 	/**
 	 * initializes a mapEdge with the given parameters
 	 * 
@@ -98,5 +98,9 @@ public class MapEdges {
 	 */
 	public void setLength(double length) {
 		this.length = length;
+	}
+	
+	public double getStraighLineDist() {
+		return start.distance(end);
 	}
 }

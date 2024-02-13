@@ -29,6 +29,8 @@ A class which reprsents a graph of geographic locations Nodes in the graph are i
         * getNumEdges()
         * addVertex(GeographicPoint location)
         * addEdge method
+        * aStarSearch method
+        * dijkstra method
 
 ### Class name: [MapEdges](/UCSDGraphs/src/roadgraph/MapEdges.java)
 Purpose and description of class: A class which the nodes connected to a specific node as an edge between every two connected nodes. 

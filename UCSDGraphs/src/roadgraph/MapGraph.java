@@ -12,12 +12,16 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
+import java.util.PriorityQueue;
 import java.util.Queue;
 import java.util.Set;
 import java.util.function.Consumer;
 
+import javax.swing.text.html.HTMLDocument.HTMLReader.IsindexAction;
 
 import geography.GeographicPoint;
 import util.GraphLoader;
@@ -168,16 +172,16 @@ public class MapGraph {
 		while (!toCheck.isEmpty()) {
 			MapNode curr = toCheck.poll();
 			
-			nodeSearched.accept(curr.getVertexLocation());
-			if (curr.getVertexLocation().equals(goal)) {
+			nodeSearched.accept(curr.getLocation());
+			if (curr.getLocation().equals(goal)) {
 				return this.graphPath(goal, start, parentMap);
 			}
 			
-			for(GeographicPoint next : curr.getNeibourNodes()) {
+			for(GeographicPoint next : curr.getNeighbors()) {
 				if (!visidted.contains(next)) {
 					toCheck.add(vertices.get(next));
 					visidted.add(next);
-					parentMap.put(next, curr.getVertexLocation());
+					parentMap.put(next, curr.getLocation());
 				}
 			}
 		}
@@ -196,13 +200,24 @@ public class MapGraph {
 	 * @return the path from the starting node to the goal node
 	 */
 	public List<GeographicPoint> graphPath(GeographicPoint goal, GeographicPoint start, HashMap<GeographicPoint, GeographicPoint> map) {
+		
+		if (map == null) {
+			throw new NullPointerException("map cannot be null");
+		}
+		
+		if (goal == null || start == null) {
+			throw new NullPointerException("goal or start cannot be null");
+		}
 		List<GeographicPoint> list = new ArrayList<GeographicPoint>();
 		list.add(goal);
 		
 		GeographicPoint curr = map.get(goal);
+		
+
 		while (!curr.equals(start)) {
 			list.add(curr);
 			curr = map.get(curr);
+			//System.out.println(curr.toString() + " ");
 		}
 		list.add(start);
 		
@@ -236,13 +251,73 @@ public class MapGraph {
 										  GeographicPoint goal, Consumer<GeographicPoint> nodeSearched)
 	{
 		// TODO: Implement this method in WEEK 4
-
+		initDistances(start, goal, false);
+		PriorityQueue<MapNode> pq = new PriorityQueue<>();
+		HashMap<GeographicPoint, GeographicPoint> parentMap = new HashMap<GeographicPoint, GeographicPoint>();
+		HashSet<GeographicPoint> visited = new HashSet<GeographicPoint>();
+		
+		
+		pq.add(vertices.get(start));
+		
+		int count = 0;
+		Boolean pathFound = false;
+		while (!pq.isEmpty()) {
+			MapNode curr = pq.poll();
+			count++;
+			nodeSearched.accept(curr.getLocation());
+			
+			
+			if (!visited.contains(curr.getLocation())) {
+				visited.add(curr.getLocation());
+				
+				
+				if (curr.getLocation().equals(goal)) {
+					pathFound = true;
+					break;
+				}
+				
+				for(MapEdges edge : curr.getEdges()) {
+					double disAndCost = curr.getDistance() + edge.getLength();
+					if (disAndCost < vertices.get(edge.getEnd()).getDistance()) {
+						vertices.get(edge.getEnd()).setDistance(disAndCost);
+						
+						pq.add(vertices.get(edge.getEnd()));
+						parentMap.put(edge.getEnd(), curr.getLocation());
+					}
+				}
+			}
+		}
 		// Hook for visualization.  See writeup.
 		//nodeSearched.accept(next.getLocation());
+		System.out.println("Dijstkare total number of visited nodes: " + count);
+		
+		if (pathFound) {
+			return this.graphPath(goal, start, parentMap);
+		}
 		
 		return null;
 	}
 
+	private void initDistances(GeographicPoint start, GeographicPoint goal, Boolean isAstarAlgo) {
+		
+		for(GeographicPoint curr : vertices.keySet()) {
+			MapNode node = vertices.get(curr);
+						
+			if (isAstarAlgo) {
+				node.setAStar(isAstarAlgo);
+				node.setHeuristicCost(vertices.get(goal));
+			} else {
+				node.setAStar(false);
+			}
+			
+			if (curr.equals(start)) {
+				node.setDistance(0);
+			} else {
+				node.setDistance(Double.MAX_VALUE);
+			}
+		}
+			
+	}
 	/** Find the path from start to goal using A-Star search
 	 * 
 	 * @param start The starting location
@@ -267,11 +342,53 @@ public class MapGraph {
 	public List<GeographicPoint> aStarSearch(GeographicPoint start, 
 											 GeographicPoint goal, Consumer<GeographicPoint> nodeSearched)
 	{
+		initDistances(start, goal, true);
 		// TODO: Implement this method in WEEK 4
+		PriorityQueue<MapNode> pq = new PriorityQueue<>();
+		HashMap<GeographicPoint, GeographicPoint> parentMap = new HashMap<GeographicPoint, GeographicPoint>();
+		HashSet<GeographicPoint> visited = new HashSet<GeographicPoint>();
 		
-		// Hook for visualization.  See writeup.
-		//nodeSearched.accept(next.getLocation());
 		
+		pq.add(vertices.get(start));
+		
+		int count = 0;
+		Boolean pathFound = false;
+		
+		while (!pq.isEmpty()) {
+			MapNode curr = pq.poll();
+			count++;
+			nodeSearched.accept(curr.getLocation());
+			
+			if (!visited.contains(curr.getLocation())) {
+				visited.add(curr.getLocation());
+				
+				if (curr.getLocation().equals(goal)) {
+					pathFound = true;
+					break;
+				}
+				
+				for(MapEdges edge : curr.getEdges()) {
+					MapNode next = vertices.get(edge.getEnd());
+					
+					double disAndCost = curr.getDistance() + edge.getLength();
+					
+					if (disAndCost < next.getDistance()) {
+						next.setDistance(disAndCost);
+						
+						
+						pq.add(next);
+						parentMap.put(edge.getEnd(), curr.getLocation());
+					}						
+				}
+			}
+		}		
+		
+		System.out.println("A start total number of visited nodes: " + count);
+		
+		if (pathFound) {
+			return this.graphPath(goal, start, parentMap);
+		}
+
 		return null;
 	}
 
@@ -325,7 +442,7 @@ public class MapGraph {
 		
 		
 		/* Use this code in Week 3 End of Week Quiz */
-		/*MapGraph theMap = new MapGraph();
+		MapGraph theMap = new MapGraph();
 		System.out.print("DONE. \nLoading the map...");
 		GraphLoader.loadRoadMap("data/maps/utc.map", theMap);
 		System.out.println("DONE.");
@@ -337,7 +454,7 @@ public class MapGraph {
 		List<GeographicPoint> route = theMap.dijkstra(start,end);
 		List<GeographicPoint> route2 = theMap.aStarSearch(start,end);
 
-		*/
+		
 		
 	}
 	
